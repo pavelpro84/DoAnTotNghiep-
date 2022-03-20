@@ -23,7 +23,7 @@ namespace courses_edu_be
 {
     public class Startup
     {
-        private readonly string secret_key = "JWT_SECRET_KEY";
+        private readonly string secret_key = "THIS_IS_MY_JWT_SECRET_KEY";
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;

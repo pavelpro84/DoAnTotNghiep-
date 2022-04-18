@@ -30,7 +30,7 @@ namespace JWT.courses_edu_be
             ServiceResponse res = new ServiceResponse();
             try
             {
-                string passwordMD5 = Helper.EncodeMD5(password);
+                string passwordMD5 = StringUtils.EncodeMD5(password);
                 var accountResult = await _db.SystemUser
                     .Where(_ => _.UserName == username && _.UserPassword == passwordMD5)
                     .FirstOrDefaultAsync();
@@ -38,9 +38,15 @@ namespace JWT.courses_edu_be
                 {
                     return ErrorHandler.BadRequestResponse(Message.LoginIncorrect);
                 }
+                accountResult.UserPassword = null;
+                string sql_get_role = $"select * from SystemRole where RoleId in (select distinct SystemRoleId from UserDetail where SystemUserId = @SystemUserId)";
+                var roles = await _db.SystemRole
+                    .FromSqlRaw(sql_get_role, new SqlParameter("@SystemUserId", accountResult.SystemUserId))
+                    .ToListAsync();
 
                 Dictionary<string, object> result = new Dictionary<string, object>();
                 result.Add("account", accountResult);
+                result.Add("roles", roles);
                 result.Add("token", EncodeJWTToken(result));
                 res.Success = true;
                 res.Data = result;

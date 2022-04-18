@@ -25,12 +25,12 @@ namespace courses_edu_be.Models
         public virtual DbSet<Grade> Grade { get; set; }
         public virtual DbSet<GradeSubjectDetail> GradeSubjectDetail { get; set; }
         public virtual DbSet<Lesson> Lesson { get; set; }
-        public virtual DbSet<LessonDetail> LessonDetail { get; set; }
         public virtual DbSet<Question> Question { get; set; }
-        public virtual DbSet<QuestionDetail> QuestionDetail { get; set; }
         public virtual DbSet<SchoolSubject> SchoolSubject { get; set; }
         public virtual DbSet<SubCategory> SubCategory { get; set; }
+        public virtual DbSet<SystemRole> SystemRole { get; set; }
         public virtual DbSet<SystemUser> SystemUser { get; set; }
+        public virtual DbSet<UserDetail> UserDetail { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -139,22 +139,11 @@ namespace courses_edu_be.Models
                 entity.Property(e => e.LessonSlug)
                     .IsRequired()
                     .HasMaxLength(255);
-            });
-
-            modelBuilder.Entity<LessonDetail>(entity =>
-            {
-                entity.Property(e => e.LessonDetailId).HasDefaultValueSql("(newid())");
 
                 entity.HasOne(d => d.Courses)
-                    .WithMany(p => p.LessonDetail)
+                    .WithMany(p => p.Lesson)
                     .HasForeignKey(d => d.CoursesId)
-                    .HasConstraintName("FK__LessonDet__Cours__4316F928");
-
-                entity.HasOne(d => d.Lesson)
-                    .WithMany(p => p.LessonDetail)
-                    .HasForeignKey(d => d.LessonId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__LessonDet__Lesso__440B1D61");
+                    .HasConstraintName("FK__Lesson__CoursesI__403A8C7D");
             });
 
             modelBuilder.Entity<Question>(entity =>
@@ -172,21 +161,11 @@ namespace courses_edu_be.Models
                 entity.Property(e => e.OptionD).IsRequired();
 
                 entity.Property(e => e.QuestionContent).IsRequired();
-            });
-
-            modelBuilder.Entity<QuestionDetail>(entity =>
-            {
-                entity.Property(e => e.QuestionDetailId).HasDefaultValueSql("(newid())");
 
                 entity.HasOne(d => d.Lesson)
-                    .WithMany(p => p.QuestionDetail)
+                    .WithMany(p => p.Question)
                     .HasForeignKey(d => d.LessonId)
-                    .HasConstraintName("FK__QuestionD__Lesso__4AB81AF0");
-
-                entity.HasOne(d => d.Question)
-                    .WithMany(p => p.QuestionDetail)
-                    .HasForeignKey(d => d.QuestionId)
-                    .HasConstraintName("FK__QuestionD__Quest__4BAC3F29");
+                    .HasConstraintName("FK__Question__Lesson__440B1D61");
             });
 
             modelBuilder.Entity<SchoolSubject>(entity =>
@@ -211,10 +190,18 @@ namespace courses_edu_be.Models
                     .HasMaxLength(255);
             });
 
+            modelBuilder.Entity<SystemRole>(entity =>
+            {
+                entity.HasKey(e => e.RoleId)
+                    .HasName("PK__SystemRo__8AFACE1A40740B1A");
+
+                entity.Property(e => e.RoleName).HasMaxLength(255);
+            });
+
             modelBuilder.Entity<SystemUser>(entity =>
             {
                 entity.HasIndex(e => e.UserName)
-                    .HasName("UQ__SystemUs__C9F28456406E8A4C")
+                    .HasName("UQ__SystemUs__C9F28456A7BAEE7C")
                     .IsUnique();
 
                 entity.Property(e => e.SystemUserId).HasDefaultValueSql("(newid())");
@@ -238,6 +225,11 @@ namespace courses_edu_be.Models
                     .HasMaxLength(255);
 
                 entity.Property(e => e.UserPhone).HasMaxLength(20);
+            });
+
+            modelBuilder.Entity<UserDetail>(entity =>
+            {
+                entity.Property(e => e.UserDetailId).HasDefaultValueSql("(newid())");
             });
 
             OnModelCreatingPartial(modelBuilder);

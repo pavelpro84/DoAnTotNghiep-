@@ -9,11 +9,6 @@ namespace courses_edu_be.Models
 {
     public partial class Question
     {
-        public Question()
-        {
-            QuestionDetail = new HashSet<QuestionDetail>();
-        }
-
         public Guid QuestionId { get; set; }
         public string QuestionContent { get; set; }
         public string OptionA { get; set; }
@@ -21,7 +16,8 @@ namespace courses_edu_be.Models
         public string OptionC { get; set; }
         public string OptionD { get; set; }
         public string Answer { get; set; }
+        public Guid LessonId { get; set; }
 
-        public virtual ICollection<QuestionDetail> QuestionDetail { get; set; }
+        public virtual Lesson Lesson { get; set; }
     }
 }

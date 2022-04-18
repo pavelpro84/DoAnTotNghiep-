@@ -155,21 +155,54 @@ namespace courses_edu_be.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(userSignUp.UserFullName))
+                {
+                    return ErrorHandler.BadRequestResponse(Message.UserFullNameEmpty);
+                }
+                if (string.IsNullOrEmpty(userSignUp.UserPassword))
+                {
+                    return ErrorHandler.BadRequestResponse(Message.UserPasswordEmpty);
+                }
+                var user_result = _db.SystemUser
+                    .Where(item => item.UserName.Equals(userSignUp.UserName.Trim()))
+                    .FirstOrDefault();
+                if (user_result != null)
+                {
+                    return ErrorHandler.BadRequestResponse(Message.UserLoginNameExist);
+                }
+
+                Dictionary<string, object> result = new Dictionary<string, object>();
+
                 SystemUser sysUser = new SystemUser()
                 {
                     SystemUserId = Guid.NewGuid(),
                     UserName = userSignUp.UserName.Trim(),
                     UserFullName = userSignUp.UserFullName?.Trim(),
-                    UserPassword = Helper.EncodeMD5(userSignUp.UserPassword.Trim()),
+                    UserPassword = StringUtils.EncodeMD5(userSignUp.UserPassword.Trim()),
                     UserAvatar = userSignUp.UserAvatar?.Trim(),
                     UserEmail = userSignUp.UserEmail?.Trim(),
                     UserDob = userSignUp.UserDob?.Trim(),
                     UserPhone = userSignUp.UserPhone?.Trim(),
                 };
+                //_db.SystemUser.Add(sysUser);
+                result.Add("user", sysUser);
 
-                _db.SystemUser.Add(sysUser);
+                var role = await _db.SystemRole.FindAsync(userSignUp.UserRoleType);
+                if (role == null)
+                {
+                    return ErrorHandler.BadRequestResponse(Message.RoleNotFound);
+                }
+                result.Add("role", role);
 
-                await _db.SaveChangesAsync();
+                UserDetail sysUserDetail = new UserDetail
+                {
+                    UserDetailId = Guid.NewGuid(),
+                    SystemRoleId = userSignUp.UserRoleType,
+                    SystemUserId = sysUser.SystemUserId,
+                };
+                //_db.UserDetail.Add(sysUserDetail);
+
+                //await _db.SaveChangesAsync();
 
                 return new ServiceResponse()
                 {

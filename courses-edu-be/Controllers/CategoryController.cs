@@ -77,11 +77,7 @@ namespace courses_edu_be.Controllers
             var category = await _db.Category.FindAsync(id);
             if (category == null)
             {
-                res.Data = null;
-                res.Message = Message.CategoryNotFound;
-                res.ErrorCode = 404;
-                res.StatusCode = HttpStatusCode.NotFound;
-                return res;
+                return ErrorHandler.NotFoundResponse(Message.CategoryNotFound);
             }
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("category", category);
@@ -104,11 +100,7 @@ namespace courses_edu_be.Controllers
             var category = await _db.Category.Where(item => slug.Equals(slug)).FirstOrDefaultAsync();
             if (category == null)
             {
-                res.Data = null;
-                res.Message = Message.CategoryNotFound;
-                res.ErrorCode = 404;
-                res.StatusCode = HttpStatusCode.NotFound;
-                return res;
+                return ErrorHandler.NotFoundResponse(Message.CategoryNotFound);
             }
 
             Dictionary<string, object> result = new Dictionary<string, object>();
@@ -119,5 +111,134 @@ namespace courses_edu_be.Controllers
             res.StatusCode = HttpStatusCode.OK;
             return res;
         }
+
+        /// <summary>
+        /// Create category
+        /// </summary>
+        /// <param name="category"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ServiceResponse> CreateCategory(Category category)
+        {
+            ServiceResponse res = new ServiceResponse();
+            if (!Helper.CheckPermission(HttpContext, "admin"))
+            {
+                return ErrorHandler.UnauthorizeCatchResponse();
+            }
+
+            if (string.IsNullOrEmpty(category.CategoryName))
+            {
+                return ErrorHandler.BadRequestResponse(Message.CategoryNameEmpty);
+            }
+
+            category.CategoryId = Guid.NewGuid();
+            category.CategoryName = category.CategoryName.Trim();
+            if (string.IsNullOrEmpty(category.CategorySlug))
+            {
+                category.CategorySlug = StringUtils.Slugify(category.CategoryName
+                    + "-"
+                    + category.CategoryId);
+            }
+            else
+            {
+                var category_check_slug = await _db.Category.Where(item =>
+                item.CategorySlug.Equals(category.CategorySlug.Trim()))
+                    .FirstOrDefaultAsync();
+                if (category_check_slug != null)
+                {
+                    return ErrorHandler.BadRequestResponse(Message.CategorySlugExist);
+                }
+            }
+
+            _db.Category.Add(category);
+            await _db.SaveChangesAsync();
+
+            res.Data = category;
+            res.Success = true;
+            res.StatusCode = HttpStatusCode.OK;
+            return res;
+        }
+
+        /// <summary>
+        /// Edit category
+        /// </summary>
+        /// <param name="category"></param>
+        /// <returns></returns>
+        [HttpPut("edit/{id}")]
+        public async Task<ServiceResponse> EditCategory(Guid id, Category category)
+        {
+            ServiceResponse res = new ServiceResponse();
+            if (!Helper.CheckPermission(HttpContext, "admin"))
+            {
+                return ErrorHandler.UnauthorizeCatchResponse();
+            }
+            var category_result = await _db.Category.FindAsync(id);
+            if (category_result == null)
+            {
+                return ErrorHandler.BadRequestResponse(Message.CategoryNotFound);
+            }
+
+            if (string.IsNullOrEmpty(category.CategoryName))
+            {
+                return ErrorHandler.BadRequestResponse(Message.CategoryNameEmpty);
+            }
+
+            category_result.CategoryName = category.CategoryName.Trim();
+            if (string.IsNullOrEmpty(category.CategorySlug))
+            {
+                category_result.CategorySlug = StringUtils.Slugify(category.CategoryName.Trim()
+                    + "-"
+                    + category_result.CategoryId);
+            }
+            else
+            {
+                var category_check_slug = await _db.Category.Where(item =>
+                item.CategorySlug.Equals(category.CategorySlug.Trim()))
+                    .FirstOrDefaultAsync();
+                if (category_check_slug != null)
+                {
+                    return ErrorHandler.BadRequestResponse(Message.CategorySlugExist);
+                } else
+                {
+                    category_result.CategorySlug = category.CategorySlug.Trim();
+                }
+            }
+
+            await _db.SaveChangesAsync();
+
+            res.Data = category_result;
+            res.Success = true;
+            res.StatusCode = HttpStatusCode.OK;
+            return res;
+        }
+
+        /// <summary>
+        /// Delete category
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        public async Task<ServiceResponse> DeleteCategory(Guid id)
+        {
+            ServiceResponse res = new ServiceResponse();
+            if (!Helper.CheckPermission(HttpContext, "admin"))
+            {
+                return ErrorHandler.UnauthorizeCatchResponse();
+            }
+            var category = await _db.Category.FindAsync(id);
+            if (category == null)
+            {
+                return ErrorHandler.NotFoundResponse(Message.CategoryNotFound);
+            }
+
+            _db.Category.Remove(category);
+            await _db.SaveChangesAsync();
+
+            res.Data = true;
+            res.Success = true;
+            res.StatusCode = HttpStatusCode.OK;
+            return res;
+        }
+
     }
 }

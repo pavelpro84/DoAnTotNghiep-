@@ -29,10 +29,23 @@ namespace courses_edu_be.Constants
         public const string AccountLogPassword = "Thay đổi mật khẩu";
 
         //Xử lý message user account
-        public const string UserNameEmpty = "Tên người dùng không thể trống";
+        public const string UserFullNameEmpty = "Tên người dùng không thể trống";
         public const string UserLoginNameEmpty = "Tên đăng nhập không thể trống";
         public const string UserPasswordEmpty = "Mật khẩu không thể trống";
         public const string UserLoginNameExist = "Tên đăng nhập đã tồn tại";
+        public const string RoleNotFound = "Không tìm thấy role này";
+
+        //Xử lý message category
+        public const string CategoryNameEmpty = "Tên category không thể trống";
+        public const string CategoryExist = "Category đã tồn tại";
+        public const string CategorySlugExist = "Slug category đã tồn tại";
+        public const string CategorygNotFound = "Không tìm thấy category";
+
+        //Xử lý message category
+        public const string GradeNameEmpty = "Tên lớp không thể trống";
+        public const string GradeExist = "Lớp đã tồn tại";
+        public const string GradeSlugExist = "Slug lớp đã tồn tại";
+        public const string GradegNotFound = "Không tìm thấy lớp";
 
         //Xử lý message file
         public const string CategoryNotFound = "Không tìm thấy phân loại này";

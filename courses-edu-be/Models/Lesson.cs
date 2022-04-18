@@ -11,8 +11,7 @@ namespace courses_edu_be.Models
     {
         public Lesson()
         {
-            LessonDetail = new HashSet<LessonDetail>();
-            QuestionDetail = new HashSet<QuestionDetail>();
+            Question = new HashSet<Question>();
         }
 
         public Guid LessonId { get; set; }
@@ -21,8 +20,9 @@ namespace courses_edu_be.Models
         public string LessonContent { get; set; }
         public long? LessonDuration { get; set; }
         public DateTime? CreatedDate { get; set; }
+        public Guid CoursesId { get; set; }
 
-        public virtual ICollection<LessonDetail> LessonDetail { get; set; }
-        public virtual ICollection<QuestionDetail> QuestionDetail { get; set; }
+        public virtual Courses Courses { get; set; }
+        public virtual ICollection<Question> Question { get; set; }
     }
 }

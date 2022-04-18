@@ -14,5 +14,6 @@ namespace courses_edu_be.Models.CustomModel.User
         public string UserEmail { get; set; }
         public string UserDob { get; set; }
         public string UserAvatar { get; set; }
+        public int UserRoleType { get; set; }
     }
 }

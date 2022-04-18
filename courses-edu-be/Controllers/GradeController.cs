@@ -77,16 +77,138 @@ namespace courses_edu_be.Controllers
             var grade = await _db.Grade.FindAsync(id);
             if (grade == null)
             {
-                res.Data = null;
-                res.Message = Message.CategoryNotFound;
-                res.ErrorCode = 404;
-                res.StatusCode = HttpStatusCode.NotFound;
-                return res;
+                return ErrorHandler.NotFoundResponse(Message.GradegNotFound);
             }
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("grade", grade);
 
             res.Data = result;
+            res.Success = true;
+            res.StatusCode = HttpStatusCode.OK;
+            return res;
+        }
+
+        /// <summary>
+        /// Create lớp
+        /// </summary>
+        /// <param name="grade"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ServiceResponse> CreateGrade(Grade grade)
+        {
+            ServiceResponse res = new ServiceResponse();
+            if (!Helper.CheckPermission(HttpContext, "admin"))
+            {
+                return ErrorHandler.UnauthorizeCatchResponse();
+            }
+
+            if (string.IsNullOrEmpty(grade.GradeName))
+            {
+                return ErrorHandler.BadRequestResponse(Message.GradeNameEmpty);
+            }
+
+            grade.GradeId = Guid.NewGuid();
+            grade.GradeName = grade.GradeName.Trim();
+            if (string.IsNullOrEmpty(grade.GradeSlug))
+            {
+                grade.GradeSlug = StringUtils.Slugify(grade.GradeName);
+            }
+            else
+            {
+                var grade_check_slug = await _db.Grade.Where(item =>
+                item.GradeSlug.Equals(grade.GradeSlug))
+                    .FirstOrDefaultAsync();
+                if (grade_check_slug != null)
+                {
+                    return ErrorHandler.BadRequestResponse(Message.GradeSlugExist);
+                }
+            }
+
+            _db.Grade.Add(grade);
+            await _db.SaveChangesAsync();
+
+            res.Data = grade;
+            res.Success = true;
+            res.StatusCode = HttpStatusCode.OK;
+            return res;
+        }
+        
+        /// <summary>
+        /// Edit lớp
+        /// </summary>
+        /// <param name="category"></param>
+        /// <returns></returns>
+        [HttpPut("edit/{id}")]
+        public async Task<ServiceResponse> EditGrade(Guid id, Grade grade)
+        {
+            ServiceResponse res = new ServiceResponse();
+            if (!Helper.CheckPermission(HttpContext, "admin"))
+            {
+                return ErrorHandler.UnauthorizeCatchResponse();
+            }
+            var grade_result = await _db.Grade.FindAsync(id);
+            if (grade_result == null)
+            {
+                return ErrorHandler.NotFoundResponse(Message.GradegNotFound);
+            }
+
+            if (string.IsNullOrEmpty(grade.GradeName))
+            {
+                return ErrorHandler.BadRequestResponse(Message.CategoryNameEmpty);
+            }
+
+            grade_result.GradeName = grade.GradeName.Trim();
+            if (string.IsNullOrEmpty(grade.GradeSlug))
+            {
+                grade_result.GradeSlug = StringUtils.Slugify(grade_result.GradeName.Trim());
+            }
+            else
+            {
+                var category_check_slug = await _db.Grade.Where(item =>
+                item.GradeSlug.Equals(grade.GradeSlug.Trim()))
+                    .FirstOrDefaultAsync();
+                if (category_check_slug != null)
+                {
+                    return ErrorHandler.BadRequestResponse(Message.GradeSlugExist);
+                }
+                else
+                {
+                    grade_result.GradeSlug = grade.GradeSlug.Trim();
+                }
+            }
+
+            await _db.SaveChangesAsync();
+
+            res.Data = grade_result;
+            res.Success = true;
+            res.StatusCode = HttpStatusCode.OK;
+            return res;
+        }
+
+
+        /// <summary>
+        /// Xóa lớp
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        public async Task<ServiceResponse> DeleteGrade(Guid id)
+        {
+            ServiceResponse res = new ServiceResponse();
+            if (!Helper.CheckPermission(HttpContext, "admin"))
+            {
+                return ErrorHandler.UnauthorizeCatchResponse();
+            }
+            var grade = await _db.Grade.FindAsync(id);
+            if (grade == null)
+            {
+                return ErrorHandler.BadRequestResponse(Message.GradegNotFound);
+            }
+
+            _db.Grade.Remove(grade);
+            await _db.SaveChangesAsync();
+
+            res.Data = true;
             res.Success = true;
             res.StatusCode = HttpStatusCode.OK;
             return res;

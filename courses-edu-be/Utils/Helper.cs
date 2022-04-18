@@ -19,6 +19,31 @@ namespace courses_edu_be.Utils
 {
     public static class Helper
     {
+        private static readonly CoursesEduContext _db = new CoursesEduContext(); 
+        private static readonly string sql_get_role = "SELECT * FROM SystemRole WHERE RoleId IN (SELECT DISTINCT SystemRoleId FROM UserDetail WHERE SystemUserId = @SystemUserId)";
+
+        public static bool CheckPermission(HttpContext httpContext, string role_code)
+        {
+            Dictionary<string, object> account_login = JsonConvert.DeserializeObject<Dictionary<string, object>>(httpContext.User.Identity.Name);
+            if (account_login != null && account_login.ContainsKey("account"))
+            {
+                JObject jAccount = account_login["account"] as JObject;
+                SystemUser account = jAccount.ToObject<SystemUser>();
+
+                var roles = _db.SystemRole
+                    .FromSqlRaw(sql_get_role, new SqlParameter("@SystemUserId", account.SystemUserId))
+                    .ToList();
+
+                for (int i = 0; i < roles.Count(); i++)
+                {
+                    if (roles[i].RoleName == role_code)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
         public static Guid? getUserId(HttpContext httpContext)
         {
             Dictionary<string, object> account_login = JsonConvert.DeserializeObject<Dictionary<string, object>>(httpContext.User.Identity.Name);
@@ -31,24 +56,7 @@ namespace courses_edu_be.Utils
             }
             return null;
         }
-        public static string EncodeMD5(string str)
-        {
-            string result = "";
-            if (str != null)
-            {
-                MD5 md = MD5.Create();
-                byte[] bytePass = Encoding.ASCII.GetBytes(str);
-                byte[] byteResult = md.ComputeHash(bytePass);
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < byteResult.Length; i++)
-                {
-                    sb.Append(byteResult[i].ToString("X2"));
-                }
-                result = sb.ToString();
-            }
-            return result;
-        }
-
+        
         public static IEnumerable<T> OrderBy<T>(this IEnumerable<T> input, string queryString)
         {
             if (string.IsNullOrEmpty(queryString))

@@ -12,7 +12,7 @@ namespace courses_edu_be.Models
         public Courses()
         {
             CoursesDetail = new HashSet<CoursesDetail>();
-            LessonDetail = new HashSet<LessonDetail>();
+            Lesson = new HashSet<Lesson>();
         }
 
         public Guid CoursesId { get; set; }
@@ -23,6 +23,6 @@ namespace courses_edu_be.Models
         public DateTime? CreatedDate { get; set; }
 
         public virtual ICollection<CoursesDetail> CoursesDetail { get; set; }
-        public virtual ICollection<LessonDetail> LessonDetail { get; set; }
+        public virtual ICollection<Lesson> Lesson { get; set; }
     }
 }
